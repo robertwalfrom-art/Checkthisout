@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation Comparison & Verification Tool</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 10mm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 9pt;
+            line-height: 1.3;
+            color: #000;
+            background: #f5f5f5;
+            padding: 15px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 22pt;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        
+        .header p {
+            font-size: 11pt;
+            opacity: 0.95;
+        }
+        
+        .controls {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 10pt;
+            transition: all 0.3s;
+        }
+        
+        .btn-print {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-print:hover {
+            background: #229954;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+        }
+        
+        .btn-highlight {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-highlight:hover {
+            background: #e67e22;
+        }
+        
+        .btn-filter {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-filter:hover {
+            background: #2980b9;
+        }
+        
+        .legend {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .legend h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-size: 12pt;
+        }
+        
+        .legend-items {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-box {
+            width: 30px;
+            height: 20px;
+            border: 1px solid #999;
+            border-radius: 3px;
+        }
+        
+        .status-perfect { background: #d4edda; }
+        .status-missing { background: #fff3cd; }
+        .status-incorrect { background: #f8d7da; }
+        .status-unclear { background: #e2e3e5; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        
+        th {
+            background: #34495e;
+            color: white;
+            font-weight: bold;
+            font-size: 9pt;
+            text-transform: uppercase;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .col-item { width: 5%; text-align: center; font-weight: bold; }
+        .col-desc { width: 18%; }
+        .col-original { width: 22%; background: #f8f9fa; }
+        .col-status { width: 8%; text-align: center; }
+        .col-corrected { width: 22%; }
+        .col-notes { width: 25%; font-size: 8pt; }
+        
+        .section-header {
+            background: #2c3e50 !important;
+            color: white !important;
+            font-size: 11pt !important;
+            font-weight: bold;
+            text-align: center;
+            padding: 12px !important;
+        }
+        
+        .item-no {
+            background: #ecf0f1;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+        
+        .perfect {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .missing {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .incorrect {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .unclear {
+            background: #e2e3e5;
+            border-left: 4px solid #6c757d;
+        }
+        
+        .corrected-value {
+            font-weight: bold;
+            color: #155724;
+            background: #d4edda;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 2px 0;
+        }
+        
+        .original-value {
+            color: #721c24;
+            text-decoration: line-through;
+            font-style: italic;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 8pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .badge-perfect {
+            background: #28a745;
+            color: white;
+        }
+        
+        .badge-missing {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .badge-incorrect {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .badge-unclear {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .critical-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .critical-note strong {
+            color: #856404;
+        }
+        
+        .verification-icon {
+            font-size: 14pt;
+            margin-right: 5px;
+        }
+        
+        .summary {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .summary h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 14pt;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .summary-card {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .summary-card h3 {
+            font-size: 28pt;
+            margin-bottom: 5px;
+        }
+        
+        .summary-card p {
+            color: #666;
+            font-size: 10pt;
+        }
+        
+        .card-perfect {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+        
+        .card-perfect h3 {
+            color: #28a745;
+        }
+        
+        .card-issues {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+        
+        .card-issues h3 {
+            color: #dc3545;
+        }
+        
+        .card-missing {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+        
+        .card-missing h3 {
+            color: #ffc107;
+        }
+        
+        .card-unclear {
+            background: #e2e3e5;
+            border: 2px solid #6c757d;
+        }
+        
+        .card-unclear h3 {
+            color: #6c757d;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .controls, .no-print {
+                display: none;
+            }
+            
+            .header {
+                background: #2c3e50;
+            }
+            
+            table {
+                page-break-inside: auto;
+            }
+            
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Quotation Verification & Comparison Report</h1>
+        <p>Heavy Duty Digital Photocopier - Complete Technical Specification Analysis</p>
+    </div>
+    
+    <div class="controls no-print">
+        <button class="btn-print" onclick="window.print()">🖨️ Print Complete Report</button>
+        <button class="btn-highlight" onclick="highlightIssues()">⚠️ Highlight Issues Only</button>
+        <button class="btn-filter" onclick="showAll()">👁️ Show All Items</button>
+    </div>
+    
+    <div class="legend">
+        <h3>📋 Status Legend & Verification Guide</h3>
+        <div class="legend-items">
+            <div class="legend-item">
+                <div class="legend-box status-perfect"></div>
+                <span><strong>✅ PERFECT:</strong> Meets all requirements exactly</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box status-incorrect"></div>
+                <span><strong>❌ INCORRECT:</strong> Does not meet specification</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box status-missing"></div>
+                <span><strong>⚠️ MISSING:</strong> Information not provided</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box status-unclear"></div>
+                <span><strong>❓ UNCLEAR:</strong> Needs clarification</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="summary">
+        <h2>📈 Verification Summary Dashboard</h2>
+        <div class="summary-grid">
+            <div class="summary-card card-perfect">
+                <h3 id="count-perfect">0</h3>
+                <p>Perfect Compliance</p>
+            </div>
+            <div class="summary-card card-issues">
+                <h3 id="count-incorrect">0</h3>
+                <p>Incorrect/Non-Compliant</p>
+            </div>
+            <div class="summary-card card-missing">
+                <h3 id="count-missing">0</h3>
+                <p>Missing Information</p>
+            </div>
+            <div class="summary-card card-unclear">
+                <h3 id="count-unclear">0</h3>
+                <p>Needs Clarification</p>
+            </div>
+        </div>
+    </div>
+    
+    <table id="comparison-table">
+        <thead>
+            <tr>
+                <th class="col-item">Item No.</th>
+                <th class="col-desc">Description</th>
+                <th class="col-original">Original Requirement<br>(From RFQ Documents)</th>
+                <th class="col-status">Status</th>
+                <th class="col-corrected">100% Correct Specification</th>
+                <th class="col-notes">Verification Notes & Actions Required</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- BASIC INFORMATION -->
+            <tr>
+                <td colspan="6" class="section-header">🏢 SECTION 1: BASIC INFORMATION & MANUFACTURER DETAILS</td>
+            </tr>
+            
+            <tr class="missing" data-status="missing">
+                <td class="item-no">1</td>
+                <td>Make</td>
+                <td>Please specify</td>
+                <td><span class="status-badge badge-missing">⚠️ MISSING</span></td>
+                <td><span class="corrected-value">MUST SPECIFY: Canon / Ricoh / Konica Minolta / Toshiba / Epson</span></td>
+                <td>
+                    <strong>ACTION REQUIRED:</strong> Supplier must provide exact manufacturer name.<br>
+                    <strong>VERIFY:</strong> Check manufacturer's official website to confirm model exists.<br>
+                    <strong>CRITICAL:</strong> Only accept established brands with proven heavy-duty track record.
+                </td>
+            </tr>
+            
+            <tr class="missing" data-status="missing">
+                <td class="item-no">2</td>
+                <td>Model</td>
+                <td>Please specify</td>
+                <td><span class="status-badge badge-missing">⚠️ MISSING</span></td>
+                <td><span class="corrected-value">MUST SPECIFY: Exact model number (e.g., IR-ADV C5560i, MP C4504)</span></td>
+                <td>
+                    <strong>ACTION REQUIRED:</strong> Provide complete model number including any suffixes.<br>
+                    <strong>VERIFY:</strong> Cross-reference with manufacturer datasheet.<br>
+                    <strong>WARNING:</strong> Ensure model supports ALL specified requirements (A3, 25ppm+, Duplex DADF).
+                </td>
+            </tr>
+            
+            <tr class="missing" data-status="missing">
+                <td class="item-no">3</td>
+                <td>Country of Origin</td>
+                <td>Please specify</td>
+                <td><span class="status-badge badge-missing">⚠️ MISSING</span></td>
+                <td><span class="corrected-value">MUST SPECIFY: Japan / USA / Germany / China</span></td>
+                <td>
+                    <strong>ACTION REQUIRED:</strong> Provide country of origin certificate.<br>
+                    <strong>VERIFY:</strong> Affects import duties and warranty validity.
+                </td>
+            </tr>
+            
+            <tr class="missing" data-status="missing">
+                <td class="item-no">4</td>
+                <td>Country of Manufacture</td>
+                <td>Please specify</td>
+                <td><span class="status-badge badge-missing">⚠️ MISSING</span></td>
+                <td><span class="corrected-value">MUST SPECIFY: Actual manufacturing location</span></td>
+                <td>
+                    <strong>ACTION REQUIRED:</strong> Provide factory location details.<br>
+                    <strong>NOTE:</strong> May differ from country of origin (design vs manufacturing).
+                </td>
+            </tr>
+            
+            <tr class="missing" data-status="missing">
+                <td class="item-no">5</td>
+                <td>Sole agent in Sri Lanka (Name)</td>
+                <td>Please specify</td>
+                <td><span class="status-badge badge-missing">⚠️ MISSING</span></td>
+                <td><span class="corrected-value">MUST SPECIFY: Full company name of authorized agent</span></td>
+                <td>
+                    <strong>ACTION REQUIRED:</strong> Provide company registration details.<br>
+                    <strong>VERIFY:</strong> Check with manufacturer if agent is genuinely authorized.<br>
+                    <strong>CRITICAL:</strong> Unauthorized dealers void manufacturer warranty.
+                </td>
+            </tr>
+            
+            <tr class="missing" data-status="missing">
+                <td class="item-no">6</td>
+                <td>Manufacture Authorization Letter<br>Manufacture e-mail address</td>
+                <td>Please provide manufacture letter<br>Please attach<br>Please specify</td>
+                <td><span class="status-badge badge-missing">⚠️ MISSING</span></td>
+                <td>
+                    <span class="corrected-value">MANDATORY ATTACHMENTS:</span><br>
+                    1. Manufacturer Authorization Letter (original signed)<br>
+                    2. Official manufacturer email: support@[manufacturer].com<br>
+                    3. Appointment certificate with validity date
+                </td>
+                <td>
+                    <strong>CRITICAL VERIFICATION:</strong><br>
+                    ✓ Letter must be on manufacturer's official letterhead<br>
+                    ✓ Must specify dealer name, authorization scope, and validity period<br>
+                    ✓ Contact manufacturer directly to confirm authenticity<br>
+                    ✓ Verify email domain matches official manufacturer website<br>
+                    <strong>⚠️ REJECT quotation if authorization cannot be verified</strong>
+                </td>
+            </tr>
+            
+            <!-- CORE TECHNOLOGY -->
+            <tr>
+                <td colspan="6" class="section-header">⚙️ SECTION 2: CORE TECHNOLOGY & SYSTEM ARCHITECTURE</td>
+            </tr>
+            
+            <tr class="incorrect" data-status="incorrect">
+                <td class="item-no">7</td>
+                <td>Technology</td>
+                <td>Digital Monochrome multi-functional Heavy-duty</td>
+                <td><span class="status-badge badge-incorrect">❌ ERROR</span></td>
+                <td>
+                    <span class="original-value">INCORRECT: "Monochrome"</span><br>
+                    <span class="corrected-value">CORRECT: Digital COLOR Multi-functional Heavy-duty</span><br>
+                    <strong>Technology Type:</strong> Digital Electrophotography (Laser/Toner-based)<br>
+                    <strong>Process:</strong> 6-stage (Charge→Expose→Develop→Transfer→Fuse→Clean)
+                </td>
+                <td>
+                    <div class="critical-note">
+                        <strong>🚨 CRITICAL ERROR DETECTED:</strong><br>
+                        Original specification says "Monochrome" but images clearly show COLOR requirements:<br>
+                        • Image 1: References "PDF/JPEG/TIFF" and "colour" scanning<br>
+                        • Image 4: States "monochrome and colour" multiple times<br>
+                        <br>
+                        <strong>CORRECTED REQUIREMENT:</strong> Must be COLOR MFD<br>
+                        <strong>ACTION:</strong> Verify supplier quotes COLOR model, not B&W<br>
+                        <strong>REJECT:</strong> Any monochrome-only quotation
+                    </strong>
+                    </div>
+                </td>
+            </tr>
+            
+            <tr class="unclear" data-status="unclear">
+                <td class="item-no">8</td>
+                <td>Control Panel</td>
+                <td>Minimum 10 inch user friendly colour touch panel</td>
+                <td><span class="status-badge badge-unclear">❓ VERIFY</span></td>
+                <td>
+                    <span class="corrected-value">✅ CORRECT SPECIFICATION</span><br>
+                    <strong>Minimum:</strong> 10 inch diagonal measurement<br>
+                    <strong>Type:</strong> Capacitive color touchscreen<br>
+                    <strong>Features Required:</strong> Tilt-adjustable, intuitive UI, multi-language support
+                </td>
+                <td>
+                    <strong>VERIFICATION CHECKLIST:</strong><br>
+                    ☐ Confirm screen size is ≥10 inches (not 7" or 8.5")<br>
+                    ☐ Must be COLOR touchscreen (not monochrome LCD)<br>
+                    ☐ Check if tilt-adjustable for accessibility<br>
+                    ☐ Verify supports English and local languages<br>
+                    <strong>REQUEST:</strong> Screenshot or photo of actual control panel interface
+                </td>
+            </tr>
+            
+            <tr class="perfect" data-status="perfect">
+                <td class="item-no">9</td>
+                <td>Type</td>
+                <td>Floor type</td>
+                <td><span class="status-badge badge-perfect">✅ CORRECT</span></td>
+                <td>
+               
